@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# Simple script to view or kill a process on a port.
+
+# Check if argument is provided
+if [[ -z "$2" ]]
+then
+    echo "Usage: $0 {-view|-kill} [port_number]"
+    exit 1
+fi
+
+# Check if the argument is a number
+if ! [[ $2 =~ ^[0-9]+$ ]]
+then
+    echo "Invalid argument. Please provide a numeric port number."
+    exit 1
+fi
+
+port=$2
+
+if [[ $1 == "-v" || $1 == "-view" ]]
+then
+    # If -v or -view flag is provided, list the processes using this port
+    echo "The following processes are using port $port:"
+    lsof -i tcp:$port
+elif [[ $1 == "-k" || $1 == "-kill" ]]
+then
+    # If -k or -kill flag is provided, find the processes using this port and kill them
+    echo "Killing the following processes on port $port:"
+    lsof -i tcp:$port
+    lsof -i tcp:$port | awk 'NR!=1 {print $2}' | xargs kill -9
+else
+    echo "Invalid flag. Usage: $0 {-v|-view|-k|-kill} [port_number]"
+    exit 1
+fi
