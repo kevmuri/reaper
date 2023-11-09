@@ -1,5 +1,6 @@
 # reaper #
 Simple script to view or kill a process on a port.
+I can't be bothered to remember the bash commands, so I made this to simplify it.
 
 ## Usage ##
 There's probably a better way to make this into a real utility, but to use:
