@@ -1,35 +1,51 @@
 #!/bin/bash
-#
-# Simple script to view or kill a process on a port.
 
-# Check if argument is provided
-if [[ -z "$2" ]]
-then
-    echo "Usage: $0 {-view|-kill} [port_number]"
+# This script requires two arguments:
+# 1. Mode: Could be -v/-view for viewing the processes or -k/-kill for killing the processes using a port
+# 2. Port: A numeric port number
+
+# Constants
+readonly MODE="$1"
+readonly PORT="$2"
+
+# Check if the mode argument and port number are provided
+if [[ -z "$MODE" || -z "$PORT" ]]; then
+    echo "Usage: $0 {-v|-view|-k|-kill} [port_number]"
     exit 1
 fi
 
-# Check if the argument is a number
-if ! [[ $2 =~ ^[0-9]+$ ]]
-then
+# Check if the port number argument is a number
+if [[ ! $PORT =~ ^[0-9]+$ ]]; then
     echo "Invalid argument. Please provide a numeric port number."
     exit 1
 fi
 
-port=$2
+# Function for listing processes using a port
+function list_processes() {
+  echo "Processes using port $PORT:"
+  lsof -i tcp:"$PORT"
+}
 
-if [[ $1 == "-v" || $1 == "-view" ]]
-then
-    # If -v or -view flag is provided, list the processes using this port
-    echo "The following processes are using port $port:"
-    lsof -i tcp:$port
-elif [[ $1 == "-k" || $1 == "-kill" ]]
-then
-    # If -k or -kill flag is provided, find the processes using this port and kill them
-    echo "Killing the following processes on port $port:"
-    lsof -i tcp:$port
-    lsof -i tcp:$port | awk 'NR!=1 {print $2}' | xargs kill -9
-else
-    echo "Invalid flag. Usage: $0 {-v|-view|-k|-kill} [port_number]"
-    exit 1
-fi
+# Function for killing processes using a port
+function kill_processes() {
+  lsof -i tcp:"$PORT" | awk 'NR!=1 {print $2}' | xargs kill -9
+}
+
+# Main
+function main() {
+  case "$MODE" in
+    -v|-view)
+      list_processes
+      ;;
+    -k|-kill)
+      kill_processes
+      ;;
+    *)
+      echo "Invalid mode. Usage: $0 {-v|-view|-k|-kill} [port_number]"
+      exit 1
+      ;;
+  esac
+}
+
+# Start of the script
+main
